@@ -1,4 +1,4 @@
-# DeepCool AK620 Replacement
+# DeepCool AK620 DIGITAL Replacement
 
 ![Platform: Windows](https://img.shields.io/badge/platform-Windows-blue?logo=windows)
 ![Language: Python/C](https://img.shields.io/badge/language-Python%20%7C%20C-ff69b4)
