@@ -89,17 +89,17 @@ pip install -r requirements.txt
 
 - The tool selects the device by USB Vendor ID and Product ID. Confirm your device's VID/PID via Device Manager → Details → Hardware Ids, or enumerate HID devices with the provided helper.
 
-## 9) Security and safety
+## Security and safety
 
 - The apps call external components (PowerShell) and write to hardware. Run only trusted copies and review the code if you have security concerns.
 
-## 10) Extending this project
+## Extending this project
 
 - Add support for alternative temperature sources (ACPI, OpenHardwareMonitor REST API, sensors via other WMI namespaces).
 - Improve HID report reverse engineering (more settings, brightness, profiles).
 - Add Windows Toast notifications (requires AppUserModelID & Start Menu shortcut for unpackaged apps).
 
-## 11) Useful commands
+## Useful commands
 
 - List HID devices (Python + hidapi):
 
