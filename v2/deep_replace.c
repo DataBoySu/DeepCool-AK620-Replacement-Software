@@ -1,6 +1,7 @@
 // deep_replace.c - Minimal DeepCool tray app in C for Windows
 // Features: HID communication, CPU temp polling, tray icon, periodic update
 // Compile with: gcc deep_replace.c -o deep_replace.exe -lshell32 -luser32 -lhid -lsetupapi
+// If using Microsoft's C compiler: cl /EHsc deep_replace.c user32.lib shell32.lib setupapi.lib hid.lib comctl32.lib /link /OUT:deep_replace.exe
 
 #include <windows.h>
 #include <shellapi.h>
