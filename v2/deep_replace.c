@@ -18,7 +18,7 @@
 #define TEMP_CHECK_INTERVAL_MS 3000  // Check temp less frequently than HID writes
 #define WM_TRAYICON (WM_USER + 1)
 
-NOTIFYICONDATA nid;
+NOTIFYICONDATAW nid;
 HWND hwnd;
 HINSTANCE hInst;
 
@@ -27,6 +27,8 @@ volatile int temp_c = 0;
 volatile int last_temp_sent = -1;  // Track last temperature sent to avoid redundant updates
 volatile bool stop_event = false;
 HANDLE hid_device = INVALID_HANDLE_VALUE;
+volatile bool temp_error = false; /* indicates failure reading CPU temp */
+wchar_t error_text[128] = {0};
 
 // Pre-allocated buffer for HID writes (avoid repeated allocations)
 static unsigned char hid_buffer[64] = {16, 19, 1, 0, 0, 0}; // Pre-set the fixed bytes
@@ -59,28 +61,30 @@ int get_cpu_temp() {
     if (CreateProcess(NULL, cmdline, NULL, NULL, TRUE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi)) {
         CloseHandle(hWrite);
         WaitForSingleObject(pi.hProcess, 3000); // Wait max 3 seconds
-        
-        if (ReadFile(hRead, temp_str, sizeof(temp_str)-1, &bytesRead, NULL)) {
-            temp = atoi(temp_str);
+
+        if (ReadFile(hRead, temp_str, sizeof(temp_str)-1, &bytesRead, NULL) && bytesRead > 0) {
+            temp_str[bytesRead] = '\0';
+            /* parse integer, treat zero or non-numeric as failure */
+            char *endptr;
+            long v = strtol(temp_str, &endptr, 10);
+            if (endptr != temp_str && v > 0 && v < 100) {
+                temp = (int)v;
+            } else {
+                temp = -1; /* indicate failure to get a valid temperature */
+            }
+        } else {
+            temp = -1; /* read failed or no output */
         }
-        
+
         CloseHandle(pi.hProcess);
         CloseHandle(pi.hThread);
     } else {
         CloseHandle(hWrite);
+        temp = -1; /* failed to launch powershell */
     }
-    
+
     CloseHandle(hRead);
-    
-    // Fallback: use a mock temperature if OpenHardwareMonitor is not available
-    if (temp == 0) {
-        static int mock_temp = 45;
-        mock_temp += (rand() % 3) - 1; // Simulate temperature fluctuation
-        if (mock_temp < 30) mock_temp = 30;
-        if (mock_temp > 80) mock_temp = 80;
-        temp = mock_temp;
-    }
-    
+
     return temp;
 }
 
@@ -146,12 +150,19 @@ void hid_write(int tens, int ones) {
 
 // Update tray icon tooltip
 void update_tray(int temp) {
-    char buf[64];
-    sprintf(buf, "CPU Temp: %d°C", temp);
+    wchar_t buf[128];
+    _snwprintf(buf, sizeof(buf)/sizeof(wchar_t), L"CPU Temp: %d\u00B0C", temp);
     nid.uFlags = NIF_TIP;
-    strncpy(nid.szTip, buf, sizeof(nid.szTip) - 1);
-    nid.szTip[sizeof(nid.szTip) - 1] = '\0';
-    Shell_NotifyIcon(NIM_MODIFY, &nid);
+    wcsncpy(nid.szTip, buf, sizeof(nid.szTip)/sizeof(wchar_t) - 1);
+    nid.szTip[sizeof(nid.szTip)/sizeof(wchar_t) - 1] = L'\0';
+    Shell_NotifyIconW(NIM_MODIFY, &nid);
+}
+
+void update_tray_error(const wchar_t *msg) {
+    nid.uFlags = NIF_TIP;
+    wcsncpy(nid.szTip, msg, sizeof(nid.szTip)/sizeof(wchar_t) - 1);
+    nid.szTip[sizeof(nid.szTip)/sizeof(wchar_t) - 1] = L'\0';
+    Shell_NotifyIconW(NIM_MODIFY, &nid);
 }
 
 // Tray message handler with context menu
@@ -167,15 +178,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 int cmd = TrackPopupMenu(hMenu, TPM_RETURNCMD | TPM_NONOTIFY, pt.x, pt.y, 0, hWnd, NULL);
                 DestroyMenu(hMenu);
                 if (cmd == 1) {
-                    stop_event = true;
-                    Shell_NotifyIcon(NIM_DELETE, &nid);
+                        stop_event = true;
+                        Shell_NotifyIconW(NIM_DELETE, &nid);
                     PostQuitMessage(0);
                 }
             }
             break;
         case WM_DESTROY:
             stop_event = true;
-            Shell_NotifyIcon(NIM_DELETE, &nid);
+            Shell_NotifyIconW(NIM_DELETE, &nid);
             PostQuitMessage(0);
             break;
     }
@@ -191,10 +202,29 @@ DWORD WINAPI hid_loop(LPVOID lpParam) {
         // Only check temperature every TEMP_CHECK_INTERVAL_MS
         if (GetTickCount() - last_temp_check > TEMP_CHECK_INTERVAL_MS) {
             int new_temp = get_cpu_temp();
-            if (new_temp < 0) new_temp = 0;
+            if (new_temp < 0) {
+                /* OpenHardwareMonitor / WMI not available or failed - set error state and update tray */
+                if (!temp_error) {
+                    temp_error = true;
+                    _snwprintf(error_text, sizeof(error_text)/sizeof(wchar_t), L"Error: OpenHardwareMonitor not available");
+                    update_tray_error(error_text);
+                }
+                /* retry later */
+                last_temp_check = GetTickCount();
+                Sleep(POLL_INTERVAL_MS);
+                continue;
+            }
+
+            /* recovered from error */
+            if (temp_error) {
+                temp_error = false;
+                /* force tray update on recovery */
+                last_temp_sent = -999;
+            }
+
             if (new_temp > 99) new_temp = 99;
-            
-            if (new_temp != temp_c) {  // Only update if temperature changed
+
+            if (new_temp != temp_c) {  /* Only update if temperature changed */
                 temp_c = new_temp;
                 current_tens = temp_c / 10;
                 current_ones = temp_c % 10;
@@ -239,15 +269,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     hwnd = CreateWindowEx(0, wc.lpszClassName, "DeepCool", 0, 0,0,0,0, HWND_MESSAGE, 0, hInstance, 0);
     
     // Initialize tray icon
-    nid.cbSize = sizeof(NOTIFYICONDATA);
+    nid.cbSize = sizeof(NOTIFYICONDATAW);
     nid.hWnd = hwnd;
     nid.uID = 1;
     nid.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
     nid.uCallbackMessage = WM_TRAYICON;
     nid.hIcon = LoadIcon(NULL, IDI_INFORMATION);
-    strncpy(nid.szTip, "CPU Temp: 0°C", sizeof(nid.szTip) - 1);
-    nid.szTip[sizeof(nid.szTip) - 1] = '\0';
-    Shell_NotifyIcon(NIM_ADD, &nid);
+    _snwprintf(nid.szTip, sizeof(nid.szTip)/sizeof(wchar_t), L"CPU Temp: 0\u00B0C");
+    nid.szTip[sizeof(nid.szTip)/sizeof(wchar_t) - 1] = L'\0';
+    Shell_NotifyIconW(NIM_ADD, &nid);
     
     // Start both threads (matches Python structure exactly)
     HANDLE hid_thread = CreateThread(NULL, 0, hid_loop, NULL, 0, NULL);
@@ -270,7 +300,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     if (hid_device != INVALID_HANDLE_VALUE) {
         CloseHandle(hid_device);
     }
-    
-    Shell_NotifyIcon(NIM_DELETE, &nid);
+
+    Shell_NotifyIconW(NIM_DELETE, &nid);
     return 0;
 }
