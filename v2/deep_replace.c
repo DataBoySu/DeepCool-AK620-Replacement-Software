@@ -15,7 +15,7 @@
 
 #define VENDOR_ID 0x3633
 #define PRODUCT_ID 0x0002
-#define POLL_INTERVAL_MS 5000  // Increased from 2s to 5s for lower CPU usage
+#define POLL_INTERVAL_MS 5000  // Increased 5s for lower CPU usage
 #define TEMP_CHECK_INTERVAL_MS 3000  // Check temp less frequently than HID writes
 #define WM_TRAYICON (WM_USER + 1)
 
