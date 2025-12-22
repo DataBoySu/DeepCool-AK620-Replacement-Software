@@ -5,6 +5,12 @@
 
 Open-source replacement for the DeepCool AK620 controller software. This repo contains a Python tray utility and a native Windows C implementation that communicate with the AK620 over HID, read CPU temperature and update the device display.
 
+[IMPLMENTATION](IMPLEMENTATION.md)
+
+- See `IMPLEMENTATION.md` for a deeper technical description of the HID protocol, runtime flow, and build guidance.
+
+[LICENSE](LICENSE)
+
 ## Features
 
 - Communicates with the AK620 using HID (VendorID/ProductID matching).
@@ -12,11 +18,9 @@ Open-source replacement for the DeepCool AK620 controller software. This repo co
 - Windows tray icon with tooltip showing temperatures in °C, °F and K.
 - Python and native C implementations.
 
-## Download (latest release)
+## Quick start
 
 For most users the easiest option is to download the latest compiled Windows release from the project's Releases page and run the included EXE.
-
-## Quick start — Run prebuilt binary
 
 1. Download the latest release for Windows from Releases.
 2. Double-click the EXE to run (tray app).
@@ -211,22 +215,15 @@ Extending this project
 Useful commands
 
 - List HID devices (Python script using hidapi is recommended). Example (Python):
+
 ```python
 import hid
 for d in hid.enumerate():
 	print(d)
 ```
+
 </details>
 
 ## Questions or PRs
+
 - Open an issue if you want help building, adding features, or clarifying the HID report format.
-
-Implementation details
-- See `IMPLEMENTATION.md` for a deeper technical description of the HID protocol, runtime flow, and build guidance.
-
-[License](LICENSE)
-
-## Contributing
-
-- Open issues describing bugs or desired features.
-- Pull requests with tests or build instructions are welcome.
