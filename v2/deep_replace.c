@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include <hidsdi.h>
 #include <setupapi.h>
+#include <math.h>
 
 #define VENDOR_ID 0x3633
 #define PRODUCT_ID 0x0002
@@ -148,10 +149,13 @@ void hid_write(int tens, int ones) {
     WriteFile(hid_device, hid_buffer, 64, &bytesWritten, NULL);
 }
 
-// Update tray icon tooltip
+// tray icon tooltip
 void update_tray(int temp) {
-    wchar_t buf[128];
-    _snwprintf(buf, sizeof(buf)/sizeof(wchar_t), L"CPU Temp: %d\u00B0C", temp);
+    int f = (int)lround(temp * 9.0 / 5.0 + 32.0);
+    int k = (int)lround(temp + 273.15);
+    /* Format: C: XX°C\nF: YY°F\nK: ZZZ K */
+    wchar_t buf[256];
+    _snwprintf(buf, sizeof(buf)/sizeof(wchar_t), L"C: %d\u00B0C\nF: %d\u00B0F\nK: %d K", temp, f, k);
     nid.uFlags = NIF_TIP;
     wcsncpy(nid.szTip, buf, sizeof(nid.szTip)/sizeof(wchar_t) - 1);
     nid.szTip[sizeof(nid.szTip)/sizeof(wchar_t) - 1] = L'\0';
