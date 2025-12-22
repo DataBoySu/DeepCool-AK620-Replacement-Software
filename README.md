@@ -15,10 +15,6 @@
 
 Open-source replacement for the DeepCool AK620 controller software. This repo contains a Python tray utility and a native Windows C implementation that communicate with the AK620 over HID, read CPU temperature and update the device display.
 
-[IMPLMENTATION](IMPLEMENTATION.md)
-
-- See `IMPLEMENTATION.md` for a deeper technical description of the HID protocol, runtime flow, and build guidance.
-
 [LICENSE](LICENSE)
 
 ## Why this exists
