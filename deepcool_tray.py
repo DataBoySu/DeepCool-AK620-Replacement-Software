@@ -1,4 +1,10 @@
-import hid
+try:
+    import hid
+    hid_import_error = None
+except Exception as e:
+    hid = None
+    hid_import_error = e
+
 import time
 import threading
 import wmi
@@ -32,6 +38,15 @@ def create_image():
     return image
 
 def run_tray():
+    if hid is None:
+        print("ERROR: the 'hid' native library could not be loaded.")
+        print(repr(hid_import_error))
+        print("")
+        print("On Windows, install a Python package that bundles hidapi (for example: `pip install hidapi`).")
+        print("Alternatively, install the hidapi DLL (hidapi.dll / libhidapi-0.dll) so the `hid` package can load it.")
+        print("If you use a virtualenv, run the pip command inside that environment.")
+        return
+
     dev = hid.device()
     try:
         dev.open(VENDOR_ID, PRODUCT_ID)
