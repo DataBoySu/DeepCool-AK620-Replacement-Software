@@ -1,3 +1,116 @@
+# DeepCool AK620 Replacement
+
+![Platform: Windows](https://img.shields.io/badge/platform-Windows-blue?logo=windows)
+![Language: Python/C](https://img.shields.io/badge/language-Python%20%7C%20C-ff69b4)
+
+Open-source replacement for the DeepCool AK620 controller software. This repo contains a Python tray utility and a native Windows C implementation that communicate with the AK620 over HID, read CPU temperature and update the device display.
+
+## Features
+
+- Communicates with the AK620 using HID (VendorID/ProductID matching).
+- Periodically reads CPU temperature (via OpenHardwareMonitor/WMI) and updates the device display.
+- Windows tray icon with tooltip showing temperatures in °C, °F and K.
+- Python and native C implementations.
+
+## Download (latest release)
+
+For most users the easiest option is to download the latest compiled Windows release from the project's Releases page and run the included EXE.
+
+## Quick start — Run prebuilt binary
+
+1. Download the latest release for Windows from Releases.
+2. Double-click the EXE to run (tray app).
+
+## Building from source
+
+<details>
+<summary><strong>Python (build from source)</strong></summary>
+
+1. Create and activate a virtual environment:
+
+```powershell
+python -m venv .venv
+. \.venv\Scripts\Activate.ps1
+```
+
+2. Install dependencies:
+
+```powershell
+pip install -r requirements.txt
+```
+
+3. Run the tray app:
+
+```powershell
+python deepcool_tray.py
+```
+
+</details>
+
+<details>
+<summary><strong>C (MSVC) — build from source</strong></summary>
+
+1. Open the "MS C++ (Professional) - PowerShell" terminal profile.
+2. Build (example):
+
+```powershell
+cl /EHsc v2\deep_replace.c user32.lib shell32.lib setupapi.lib hid.lib comctl32.lib /link /OUT:deep_replace.exe
+```
+
+3. Run the produced `deep_replace.exe`.
+
+</details>
+
+## Troubleshooting
+
+- If Python reports `ImportError` for `hid` or missing hidapi DLLs, run:
+
+```powershell
+pip install -r requirements.txt
+```
+
+- OpenHardwareMonitor: both implementations expect CPU temperatures published under WMI namespace `root\OpenHardwareMonitor`. Install and run OpenHardwareMonitor or adapt the code to another source.
+
+## VID / PID
+
+- The tool selects the device by USB Vendor ID and Product ID. Confirm your device's VID/PID via Device Manager → Details → Hardware Ids, or enumerate HID devices with the provided helper.
+
+## 9) Security and safety
+
+- The apps call external components (PowerShell) and write to hardware. Run only trusted copies and review the code if you have security concerns.
+
+## 10) Extending this project
+
+- Add support for alternative temperature sources (ACPI, OpenHardwareMonitor REST API, sensors via other WMI namespaces).
+- Improve HID report reverse engineering (more settings, brightness, profiles).
+- Add Windows Toast notifications (requires AppUserModelID & Start Menu shortcut for unpackaged apps).
+
+## 11) Useful commands
+
+- List HID devices (Python + hidapi):
+
+```python
+import hid
+for d in hid.enumerate():
+    print(d)
+```
+
+## Implementation details
+
+See [IMPLEMENTATION.md](IMPLEMENTATION.md) for technical design, HID report format, and build guidance.
+
+## Future: Linux support
+
+- The major enhancement we want is Linux compatibility. Porting to Linux requires using libusb/hidapi and replacing WMI/OpenHardwareMonitor CPU access with a cross-platform sensor source.
+
+## License
+
+- Suggested: MIT. Replace with your preferred license by adding a `LICENSE` file.
+
+## Contributing
+
+- Open issues for bugs or feature requests.
+- Pull requests with tests/build instructions are welcome.
 # DeepCool AK620 Digital's Open-source Replacement
 
 This repository provides an open-source replacement for the official DeepCool AK620 controller software. It includes:
@@ -67,7 +180,9 @@ cl /EHsc v2\deep_replace.c user32.lib shell32.lib setupapi.lib hid.lib comctl32.
 
 </details>
 
-Troubleshooting
+## Extra Information
+
+<details><summary> Troubleshooting</summary>
 
 - hid ImportError (Python): If you see errors about missing hidapi DLLs, install `hidapi` in the same virtualenv or ensure `hidapi.dll` / `libhidapi-0.dll` is on PATH. On Windows use:
 
@@ -82,35 +197,36 @@ VID / PID
 
 - The device is selected using its USB Vendor ID and Product ID (VID/PID). Confirm on your machine via Device Manager → Details → Hardware Ids or by enumerating HID devices.
 
-9) Security and safety
+Security and safety
+
 - The apps call external components (PowerShell) and write to hardware. Run the tools only from trusted copies and inspect the code if you have security concerns.
 
-10) Extending this project
+Extending this project
+
+- Porting the Python tool to use cross-platform temperature sources and libusb/hidapi on Linux will enable broader use.
 - Add support for alternative temperature sources (ACPI, OpenHardwareMonitor REST API, sensors via WMI other namespaces).
 - Improve HID report reverse engineering (support more settings or brightness/profiles).
 - Add Windows Toast notifications (requires AppUserModelID and Start Menu shortcut registration for unpackaged apps).
 
-11) Useful commands
+Useful commands
+
 - List HID devices (Python script using hidapi is recommended). Example (Python):
 ```python
 import hid
 for d in hid.enumerate():
 	print(d)
 ```
+</details>
 
-Questions or PRs
+## Questions or PRs
 - Open an issue if you want help building, adding features, or clarifying the HID report format.
 
 Implementation details
 - See `IMPLEMENTATION.md` for a deeper technical description of the HID protocol, runtime flow, and build guidance.
 
-Future: Linux support
-- The biggest improvement and contribution we welcome is adding Linux compatibility. The project is currently Windows-centric (WMI / SetupAPI / HidD). Porting the Python tool to use cross-platform temperature sources and libusb/hidapi on Linux will enable broader use.
+[License](LICENSE)
 
-License
-- Suggested: MIT. If you want a different license, replace the `LICENSE` file accordingly.
-
-Contributing
+## Contributing
 
 - Open issues describing bugs or desired features.
 - Pull requests with tests or build instructions are welcome.
