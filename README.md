@@ -95,10 +95,9 @@ pip install -r requirements.txt
 
 ## Extending this project
 
-- Add support for alternative temperature sources (ACPI, sensors via other WMI namespaces).
+- Add support for alternative temperature sources (ACPI, OpenHardwareMonitor REST API, sensors via other WMI namespaces).
 - Improve HID report reverse engineering (more settings, brightness, profiles).
 - Add Windows Toast notifications (requires AppUserModelID & Start Menu shortcut for unpackaged apps).
-- Porting to Linux requires using libusb/hidapi and replacing WMI CPU access with a cross-platform sensor source.
 
 ## Useful commands
 
@@ -113,3 +112,16 @@ for d in hid.enumerate():
 ## Implementation details
 
 See [IMPLEMENTATION.md](IMPLEMENTATION.md) for technical design, HID report format, and build guidance.
+
+## Future: Linux support
+
+- The major enhancement we want is Linux compatibility. Porting to Linux requires using libusb/hidapi and replacing WMI/OpenHardwareMonitor CPU access with a cross-platform sensor source.
+
+## License
+
+- Suggested: MIT. Replace with your preferred license by adding a `LICENSE` file.
+
+## Contributing
+
+- Open issues for bugs or feature requests.
+- Pull requests with tests/build instructions are welcome.
