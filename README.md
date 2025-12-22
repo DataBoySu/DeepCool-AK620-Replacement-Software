@@ -3,6 +3,12 @@
 ![Platform: Windows](https://img.shields.io/badge/platform-Windows-blue?logo=windows)
 ![Language: Python/C](https://img.shields.io/badge/language-Python%20%7C%20C-ff69b4)
 
+<strong>
+Important: Download and install OpenHardwareMonitor and run it before using these tools.
+
+Both implementations read CPU temperatures from the WMI namespace `root\OpenHardwareMonitor` exposed by OpenHardwareMonitor.
+</strong>
+
 Open-source replacement for the DeepCool AK620 controller software. This repo contains a Python tray utility and a native Windows C implementation that communicate with the AK620 over HID, read CPU temperature and update the device display.
 
 [IMPLMENTATION](IMPLEMENTATION.md)
@@ -52,9 +58,9 @@ python deepcool_tray.py
 </details>
 
 <details>
-<summary><strong>C (MSVC) — build from source</strong></summary>
+<summary><strong>C (MSVC) (build from source)</strong></summary>
 
-1. Open the "MS C++ (Professional) - PowerShell" terminal profile.
+1. Open the "MS C++ (Professional) - PowerShell".
 2. Build (example):
 
 ```powershell
