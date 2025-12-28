@@ -1,5 +1,5 @@
 <!--START_SECTION:navbar-->
-[zh](locales/README.zh.md)
+[zh]
 <!--END_SECTION:navbar-->
 
 # DeepCool AK620 DIGITAL Replacement
