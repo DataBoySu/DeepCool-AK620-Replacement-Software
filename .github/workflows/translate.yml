@@ -1,0 +1,34 @@
+name: Translate Readme
+
+on:
+  push:
+    paths:
+      - 'README.md'
+
+permissions:
+  contents: write
+
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # The 9 default languages
+        lang: [fr, de, es, ja, zh, ru, pt, ko, hi]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # Use GH_TOKEN (PAT) if available to trigger other workflows, otherwise fallback to default GITHUB_TOKEN
+          token: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Run README Translator
+        uses: DataBoySu/databoysu-readme-translator@v1
+        with:
+          lang: ${{ matrix.lang }}
+
+      - name: Commit Translations
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs: update README.${{ matrix.lang }}.md and navbar"
+          file_pattern: 'README.md locales/*.md'
