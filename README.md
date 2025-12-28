@@ -1,6 +1,8 @@
 <!--START_SECTION:navbar-->
-[zh]
+[de](locales/README.de.md) | [es](locales/README.es.md) | [fr](locales/README.fr.md) | [hi](locales/README.hi.md) | [ja](locales/README.ja.md) | [ko](locales/README.ko.md) | [pt](locales/README.pt.md) | [ru](locales/README.ru.md) | [zh](locales/README.zh.md)
 <!--END_SECTION:navbar-->
+
+
 
 # DeepCool AK620 DIGITAL Replacement
 

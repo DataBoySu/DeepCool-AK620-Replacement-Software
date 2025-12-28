@@ -1,3 +1,7 @@
+<!--START_SECTION:navbar-->
+[zh]
+<!--END_SECTION:navbar-->
+
 # DeepCool AK620 数字替换
 
 ![平台：Windows](https://img.shields.io/badge/平台-Windows-blue?logo=windows)
