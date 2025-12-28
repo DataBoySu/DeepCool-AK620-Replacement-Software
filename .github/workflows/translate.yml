@@ -1,6 +1,14 @@
 name: Translate Readme
 
 on:
+  # 1. Manual Trigger
+  workflow_dispatch:
+    inputs:
+      languages:
+        description: 'Languages to translate (comma-separated)'
+        required: false
+        default: 'fr,de,es,ja,zh,ru,pt,ko,hi'
+  # 2. Automatic Trigger
   push:
     paths:
       - 'README.md'
@@ -9,21 +17,42 @@ permissions:
   contents: write
 
 jobs:
+  # Job 1: Calculate which languages to run
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - id: set-matrix
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            # Use the manual input
+            LANGS="${{ github.event.inputs.languages }}"
+          else
+            # Use the default list for pushes
+            LANGS="fr,de,es,ja,zh,ru,pt,ko,hi"
+          fi
+          # Convert comma-separated string to JSON array for the matrix
+          echo "matrix=$(echo $LANGS | jq -R -c 'split(",")')" >> $GITHUB_OUTPUT
+
+  # Job 2: Run the translation for each language
   translate:
+    needs: prepare
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false # Don't stop other languages if one fails
       matrix:
-        # The 9 default languages
-        lang: [fr, de, es, ja, zh, ru, pt, ko, hi]
+        lang: ${{ fromJson(needs.prepare.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # Use GH_TOKEN (PAT) if available to trigger other workflows, otherwise fallback to default GITHUB_TOKEN
+          # Use GH_TOKEN if you have it set, otherwise default GITHUB_TOKEN
           token: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Run README Translator
-        uses: DataBoySu/databoysu-readme-translator@v1
+        # Point this to your action. Use @main for latest code, or @v1 if you created a release.
+        uses: DataBoySu/databoysu-readme-translator@main
         with:
           lang: ${{ matrix.lang }}
 
