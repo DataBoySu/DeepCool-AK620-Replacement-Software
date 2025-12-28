@@ -1,3 +1,7 @@
+<!--START_SECTION:navbar-->
+[zh](locales/README.zh.md)
+<!--END_SECTION:navbar-->
+
 # DeepCool AK620 DIGITAL Replacement
 
 ![Platform: Windows](https://img.shields.io/badge/platform-Windows-blue?logo=windows)
