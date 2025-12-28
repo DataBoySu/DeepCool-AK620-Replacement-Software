@@ -121,10 +121,6 @@ See [IMPLEMENTATION.md](IMPLEMENTATION.md) for technical design, HID report form
 
 - The major enhancement we want is Linux compatibility. Porting to Linux requires using libusb/hidapi and replacing WMI/OpenHardwareMonitor CPU access with a cross-platform sensor source.
 
-## License
-
-- Suggested: MIT. Replace with your preferred license by adding a `LICENSE` file.
-
 ## Contributing
 
 - Open issues for bugs or feature requests.
